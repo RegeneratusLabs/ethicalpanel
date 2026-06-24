@@ -1,0 +1,25 @@
+# Cloudflared config template
+# Replace TUNNEL_ID and CREDENTIALS_FILE_PATH with your values.
+# TUNNEL_ID is the UUID shown in the Cloudflare Zero Trust dashboard.
+# CREDENTIALS_FILE_PATH is the path to the JSON credentials file you got
+# from the Cloudflare tunnel install command.
+
+tunnel: TUNNEL_ID
+credentials-file: /etc/cloudflared/CREDENTIALS_FILE_PATH.json
+
+# Ingress rules: which Cloudflare hostname maps to which local service.
+# This example routes ethicalpanel.com (and www) to caddy on :443.
+ingress:
+  - hostname: ethicalpanel.com
+    service: https://localhost:443
+    originRequest:
+      noTLSVerify: true   # caddy uses a self-signed cert (see deploy/Caddyfile)
+  - hostname: www.ethicalpanel.com
+    service: https://localhost:443
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404
+
+# Optional: warp-routing for private network access (advanced)
+# warp-routing:
+#   enabled: true

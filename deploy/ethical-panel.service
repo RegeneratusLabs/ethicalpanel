@@ -1,0 +1,52 @@
+[Unit]
+Description=Ethical Panel FastAPI app
+Documentation=https://github.com/RegeneratusLabs/ethicalpanel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=$DEPLOY_USER
+Group=$DEPLOY_USER
+WorkingDirectory=/opt/ethical-panel
+Environment="PATH=/opt/ethical-panel/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+EnvironmentFile=/opt/ethical-panel/.env
+ExecStart=/opt/ethical-panel/.venv/bin/python -m uvicorn ethics_canvas.api:app --host 127.0.0.1 --port 8001 --workers 2 --log-level info
+
+# --- Hardening (defence in depth) ---
+# systemd-analyze security ethical-panel should report OVERALL score 5.0 MEDIUM
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+# App dir writable (uvicorn needs read access; we don't write to disk)
+ReadWritePaths=/opt/ethical-panel
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+CPUQuota=200%
+
+# Graceful shutdown
+KillSignal=SIGTERM
+TimeoutStopSec=15
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+node_modules/
+.DS_Store
+
+# Vendored binaries / marketing assets
+/anthropic
+
+# Local evaluation data (regenerate with `uv run python eval_direct.py`)
+/eval_all_results.json
+/eval_all_results_corrected.json
+scripts/
+
+# Internal design docs (superpowers skill output)
+docs/superpowers/

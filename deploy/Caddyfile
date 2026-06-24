@@ -1,0 +1,47 @@
+# Ethical Panel — Caddy reverse proxy
+#
+# Architecture:  public user → Cloudflare edge → cloudflared tunnel → :443 (this) → :8001 (uvicorn)
+#
+# Why this is safe to expose on :443:
+#   the cloudflared tunnel through the ethicalpanel.com hostname)
+# - UFW allows 22 (SSH), 80/443 (this service) — but port 80/443 aren't reachable
+#   from the public internet because the domain doesn't resolve to this IP
+# - Cloudflare's edge terminates the public TLS (real cert) and forwards plaintext
+#   over QUIC to the cloudflared daemon on this VPS
+# - cloudflared then connects to THIS caddy over localhost:443
+#
+# About the self-signed cert on :443:
+# - cloudflared is configured with `noTLSVerify: true` so it accepts the
+#   self-signed cert from caddy
+# - End users get a real Cloudflare-issued cert at the edge; they never see
+#   the self-signed one
+# - We keep it self-signed because Let's Encrypt can't issue a cert without
+#   an HTTP-01 or DNS-01 challenge, and the cert is only used on localhost
+#   between cloudflared and caddy (no external client sees it)
+# - To rotate, see deploy/README.md
+#
+# Rate limiting: lives in the app itself (per-IP sliding window) and at
+# Cloudflare's edge (WAF rules). Caddy's built-in rate_limit requires a
+# plugin we don't need.
+
+:443 {
+    tls /etc/caddy/ssl/cert.pem /etc/caddy/ssl/key.pem
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+        # Strict CSP — fonts are self-hosted (see static/fonts/).
+        # Cloudflare Web Analytics: script + connect to *.cloudflareinsights.com.
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        -Server
+    }
+
+    reverse_proxy 127.0.0.1:8001
+}
+
+:80 {
+    redir https://{host}{uri} permanent
+}

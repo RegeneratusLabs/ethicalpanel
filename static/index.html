@@ -1,0 +1,1300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ethical Panel</title>
+<style>
+@font-face {font-family:"Inter";font-style:normal;font-weight:400;font-display:swap;src:url("/static/fonts/inter-400.woff2") format("woff2")}@font-face {font-family:"Inter";font-style:normal;font-weight:500;font-display:swap;src:url("/static/fonts/inter-500.woff2") format("woff2")}@font-face {font-family:"Inter";font-style:normal;font-weight:600;font-display:swap;src:url("/static/fonts/inter-600.woff2") format("woff2")}@font-face {font-family:"Inter";font-style:normal;font-weight:700;font-display:swap;src:url("/static/fonts/inter-700.woff2") format("woff2")}@font-face {font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url("/static/fonts/jbmono-400.woff2") format("woff2")}@font-face {font-family:"JetBrains Mono";font-style:normal;font-weight:500;font-display:swap;src:url("/static/fonts/jbmono-500.woff2") format("woff2")}
+:root{
+  --bg:           oklch(96.5% 0.006 250);
+  --bg-2:         oklch(94% 0.008 250);
+  --glass-fill:   rgba(255,255,255,0.62);
+  --glass-fill-2: rgba(255,255,255,0.78);
+  --glass-fill-3: rgba(255,255,255,0.88);
+  --glass-stroke: rgba(15, 23, 42, 0.08);
+  --glass-stroke-2: rgba(15, 23, 42, 0.14);
+  --glass-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 0 0 0.5px rgba(15,23,42,0.04), 0 8px 24px -8px rgba(15,23,42,0.10), 0 24px 56px -24px rgba(15,23,42,0.10);
+
+  --fg:      oklch(22% 0.018 250);
+  --fg-soft: oklch(38% 0.014 250);
+  --muted:   oklch(52% 0.012 250);
+  --muted-2: oklch(68% 0.010 250);
+  --hairline: rgba(15,23,42,0.08);
+
+  --agent-steward:     oklch(58% 0.14 165);
+  --agent-advocate:    oklch(58% 0.16 305);
+  --agent-beacon:      oklch(72% 0.14 80);
+  --agent-custodian:   oklch(60% 0.12 200);
+  --agent-sentinel:    oklch(68% 0.16 50);
+  --agent-sage:        oklch(56% 0.14 250);
+  --agent-philosopher: oklch(60% 0.16 350);
+  --agent-guardian:    oklch(50% 0.06 250);
+
+  --verdict-pass:    oklch(58% 0.14 150);
+  --verdict-caution: oklch(72% 0.14 75);
+  --verdict-flag:    oklch(60% 0.18 25);
+
+  --accent:      oklch(54% 0.18 252);
+  --accent-soft: oklch(54% 0.18 252 / 0.12);
+
+  --ink: oklch(28% 0.02 250);
+  --ink-soft: oklch(46% 0.018 250);
+
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-soft:   cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+html,body{height:100%}
+body{
+  font-family:var(--font-body);
+  color:var(--fg);
+  font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  letter-spacing:-0.005em;
+  overflow:hidden;height:100vh;
+  background:
+    radial-gradient(ellipse 60% 50% at 12% 8%,   oklch(85% 0.10 252 / 0.35), transparent 55%),
+    radial-gradient(ellipse 50% 60% at 88% 12%,  oklch(88% 0.08 165 / 0.32), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, oklch(90% 0.08 305 / 0.22), transparent 55%),
+    radial-gradient(ellipse 40% 40% at 90% 75%,  oklch(92% 0.08 80 / 0.25),  transparent 55%),
+    linear-gradient(180deg, oklch(98% 0.005 250), oklch(94% 0.012 250));
+  background-attachment:fixed;
+}
+
+.window{
+  position:fixed;inset:18px;
+  display:grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "titlebar titlebar"
+    "sidebar  main"
+    "sidebar  composer";
+  border-radius:18px;
+  background:var(--glass-fill);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border:1px solid var(--glass-stroke);
+  box-shadow:var(--glass-shadow);
+  overflow:hidden;
+}
+
+.titlebar{
+  grid-area:titlebar;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.55));
+  border-bottom:1px solid var(--glass-stroke);
+  user-select:none;
+}
+.titlebar .title{font-size:12.5px;font-weight:600;color:var(--fg-soft);display:flex;align-items:center;gap:10px}
+.titlebar .title .glyph{
+  width:26px;height:26px;border-radius:7px;display:grid;place-items:center;
+  background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  border:1px solid var(--glass-stroke);
+  box-shadow:0 1px 0 rgba(255,255,255,0.7) inset, 0 1px 2px rgba(0,0,0,0.04);
+  overflow:hidden;
+}
+.titlebar .title .glyph svg{width:22px;height:22px}
+.tb-actions{display:flex;align-items:center;gap:8px}
+
+.new-chat-btn{
+  display:none;align-items:center;gap:6px;
+  font-size:11.5px;font-weight:500;color:var(--fg-soft);
+  padding:4px 11px 4px 9px;border-radius:999px;
+  background:rgba(15,23,42,0.04);border:1px solid var(--glass-stroke);
+  cursor:pointer;transition:background .15s, color .15s, border-color .15s;
+  font-family:inherit;
+}
+.new-chat-btn:hover{background:rgba(15,23,42,0.09);color:var(--fg);border-color:color-mix(in oklch, var(--fg-soft) 20%, var(--glass-stroke))}
+.new-chat-btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.new-chat-btn svg{width:11px;height:11px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round}
+.new-chat-btn.visible{display:inline-flex}
+
+.tb-pill{
+  font-size:11px;font-weight:500;color:var(--fg-soft);
+  padding:4px 10px;border-radius:999px;
+  background:rgba(15,23,42,0.04);
+  border:1px solid var(--glass-stroke);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.tb-pill .live{width:6px;height:6px;border-radius:50%;background:var(--verdict-pass);box-shadow:0 0 0 3px oklch(58% 0.14 150 / 0.18);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px oklch(58% 0.14 150 / 0)}}
+
+.sidebar{
+  grid-area:sidebar;
+  display:flex;flex-direction:column;
+  background:linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.45));
+  border-right:1px solid var(--glass-stroke);
+  overflow:hidden;
+}
+.sb-header{padding:14px 16px 10px;border-bottom:1px solid var(--glass-stroke);flex-shrink:0}
+.sb-header h3{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:2px}
+.sb-header p{font-size:11.5px;color:var(--fg-soft);line-height:1.4}
+
+.council-list{flex:1;overflow-y:auto;padding:10px 10px 16px;display:flex;flex-direction:column;gap:6px}
+.council-list::-webkit-scrollbar{width:6px}
+.council-list::-webkit-scrollbar-thumb{background:rgba(15,23,42,0.12);border-radius:99px}
+
+.agent-card{
+  position:relative;
+  background:var(--glass-fill-2);
+  border:1px solid var(--glass-stroke);
+  border-radius:14px;
+  padding:11px 12px 10px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 1px 2px rgba(15,23,42,0.04);
+  /* Cards are visible by default — the agent roster is part of the product.
+     The .landed class still applies a subtle "just arrived" pulse on first
+     agent_start to confirm a deliberation is live, but opacity/transform
+     are not driven by it. */
+  opacity:1;
+  transform:translateY(0) scale(1);
+  transition: border-color .2s, background .2s, box-shadow .2s;
+  cursor:pointer;
+  overflow:hidden;
+}
+.agent-card.landed{animation: cardLanded .5s var(--ease-spring) 1}
+@keyframes cardLanded {
+  0%   { transform: translateY(-3px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+.agent-card:hover{transform:translateY(-1px);border-color:color-mix(in oklch, var(--agent-color) 35%, var(--glass-stroke));box-shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 4px 14px -2px color-mix(in oklch, var(--agent-color) 18%, transparent)}
+.agent-card:focus-visible{outline:2px solid var(--agent-color);outline-offset:2px}
+.agent-card::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;background:var(--agent-color);border-radius:0 3px 3px 0;opacity:0.7;transition:opacity .2s}
+.agent-card.is-active::before{opacity:1}
+.agent-card.is-active{background:var(--glass-fill-3);border-color:var(--glass-stroke-2)}
+
+.ac-top{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.ac-avatar{
+  width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:color-mix(in oklch, var(--agent-color) 12%, white);
+  border:1px solid var(--glass-stroke);
+  color:var(--agent-color);
+  flex-shrink:0;
+  overflow:hidden;
+  position:relative;
+}
+.ac-avatar svg{width:24px;height:24px;display:block}
+.ac-avatar::after{content:'';position:absolute;inset:-2px;border-radius:50%;border:1.5px solid var(--agent-color);opacity:0;transition:opacity .25s}
+.agent-card.is-active .ac-avatar::after{opacity:1}
+
+.ac-name{font-size:13px;font-weight:600;line-height:1.1;letter-spacing:-0.01em}
+.ac-focus{font-size:10.5px;color:var(--muted);line-height:1.2;margin-top:1px}
+
+.ac-score{
+  margin-left:auto;
+  display:flex;align-items:baseline;gap:1px;
+  font-variant-numeric:tabular-nums;
+  font-family:var(--font-display);
+  font-weight:600;
+  letter-spacing:-0.02em;
+  color:var(--agent-color);
+}
+.ac-score .num{font-size:18px;line-height:1}
+.ac-score .den{font-size:10px;color:var(--muted-2);font-weight:500}
+
+.ac-bar{position:relative;height:5px;border-radius:99px;background:rgba(15,23,42,0.06);overflow:hidden}
+.ac-bar-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg, var(--agent-color), color-mix(in oklch, var(--agent-color) 60%, white));border-radius:99px;transition:width 1.1s var(--ease-out)}
+
+.ac-meta{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.ac-verdict{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--verdict-color, var(--muted));display:inline-flex;align-items:center;gap:4px}
+.ac-verdict::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--verdict-color, var(--muted));box-shadow:0 0 0 2px color-mix(in oklch, var(--verdict-color, var(--muted)) 22%, transparent)}
+.ac-flags{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end}
+.ac-flag{font-size:9px;font-weight:500;padding:1px 5px;border-radius:4px;background:color-mix(in oklch, var(--agent-color) 12%, transparent);color:var(--agent-color);border:1px solid color-mix(in oklch, var(--agent-color) 20%, transparent)}
+
+.ac-reason{margin-top:0;max-height:0;opacity:0;overflow:hidden;transition: max-height .45s var(--ease-out), opacity .3s var(--ease-out), margin-top .35s var(--ease-out);font-size:12px;line-height:1.5;color:var(--fg-soft)}
+.agent-card.is-active .ac-reason{max-height:240px;opacity:1;margin-top:10px}
+.ac-reason-inner{padding:9px 10px;background:rgba(15,23,42,0.035);border-radius:9px;border:1px solid var(--glass-stroke)}
+
+.ac-thinking{display:none;align-items:center;gap:4px;font-size:10px;font-weight:500;color:var(--muted);margin-top:4px}
+.agent-card.thinking .ac-thinking{display:flex}
+.agent-card.thinking .ac-bar,
+.agent-card.thinking .ac-meta,
+.agent-card.thinking .ac-reason{display:none}
+.ac-thinking .dot{width:4px;height:4px;border-radius:50%;background:var(--agent-color);animation:thinkDot 1.2s ease-in-out infinite}
+.ac-thinking .dot:nth-child(2){animation-delay:0.15s}
+.ac-thinking .dot:nth-child(3){animation-delay:0.3s}
+@keyframes thinkDot{0%,80%,100%{transform:scale(0.5);opacity:0.3}40%{transform:scale(1);opacity:1}}
+
+.main{grid-area:main;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.main-scroll{flex:1;overflow-y:auto;padding:24px 28px 12px;scroll-behavior:smooth}
+.main-scroll::-webkit-scrollbar{width:6px}
+.main-scroll::-webkit-scrollbar-thumb{background:rgba(15,23,42,0.12);border-radius:99px}
+
+.convene{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 40px 56px}
+.hero-illo{width:min(720px, 96%);aspect-ratio:720/320;margin:0 auto 28px;position:relative}
+.hero-illo svg{width:100%;height:100%;display:block;overflow:visible}
+.hero-illo .stroke{fill:none;stroke:var(--ink);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.hero-illo .stroke-soft{fill:none;stroke:var(--ink-soft);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;opacity:0.55;vector-effect:non-scaling-stroke}
+.hero-illo .doodle{fill:none;stroke:var(--ink-soft);stroke-width:1.1;stroke-linecap:round;opacity:0.7;vector-effect:non-scaling-stroke}
+
+.hero-illo .face{transform:rotate(var(--rot, 0deg));transform-box:fill-box;transform-origin:center;animation:breathe 9s var(--ease-soft) infinite;animation-delay:var(--breathe, 0s)}
+@keyframes breathe{0%,100%{opacity:1}35%{opacity:0.45}70%{opacity:1}}
+.hero-illo .stroke,.hero-illo .stroke-soft,.hero-illo .doodle{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 3.2s var(--ease-out) forwards, breathe 9s var(--ease-soft) infinite}
+.hero-illo .face .stroke{animation-delay:var(--d, 0s), calc(var(--breathe, 0s) + 4s)}
+.hero-illo .face .stroke-soft{animation-delay:calc(var(--d, 0s) + 0.4s), calc(var(--breathe, 0s) + 4.4s)}
+.hero-illo .face .doodle{animation-delay:calc(var(--d, 0s) + 0.8s), calc(var(--breathe, 0s) + 4.8s);animation-duration:2.6s, 9s}
+.hero-illo > path.doodle{animation-delay:1.8s, 4s;animation-duration:2.4s, 9s}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+@media (prefers-reduced-motion: reduce){
+  .hero-illo .stroke,.hero-illo .stroke-soft,.hero-illo .doodle{stroke-dasharray:none;stroke-dashoffset:0;animation:none}
+  .hero-illo .face{animation:none}
+  .hero-eyebrow,.hero h1,.hero p,.suggestions{animation:none;opacity:1}
+  .agent-card,.send-btn,.suggestion,.message-row{transition:none;animation:none;opacity:1;transform:none}
+}
+
+.hero-eyebrow{font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;opacity:0;animation:fadeUp .8s var(--ease-out) 0.6s forwards}
+.hero h1{font-size:32px;font-weight:700;letter-spacing:-0.03em;line-height:1.12;margin-bottom:12px;color:var(--fg);opacity:0;animation:fadeUp .8s var(--ease-out) 0.75s forwards}
+.hero p{color:var(--muted);font-size:14px;line-height:1.55;max-width:46ch;margin:0 auto 24px;opacity:0;animation:fadeUp .8s var(--ease-out) 0.9s forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:560px;opacity:0;animation:fadeUp .8s var(--ease-out) 1.05s forwards}
+.suggestion{font-size:12px;font-weight:500;padding:8px 13px;border-radius:999px;background:var(--glass-fill-3);border:1px solid var(--glass-stroke);color:var(--fg-soft);cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,0.8) inset;transition:all .15s var(--ease-out)}
+.suggestion:hover{background:var(--accent-soft);border-color:color-mix(in oklch, var(--accent) 30%, transparent);color:var(--accent);transform:translateY(-1px)}
+.suggestion:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.message-row{display:flex;gap:10px;margin-bottom:14px;opacity:0;transform:translateY(6px);animation:msgIn .45s var(--ease-out) forwards}
+@keyframes msgIn{to{opacity:1;transform:translateY(0)}}
+.message-row.user{flex-direction:row-reverse}
+
+.convening-row{display:flex;gap:10px;margin:0 0 14px;align-items:center;opacity:0;animation:msgIn .45s var(--ease-out) forwards}
+.convening-row .convening-avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--glass-fill-2);border:1px solid var(--glass-stroke);color:var(--muted);font-size:14px;flex-shrink:0}
+.convening-row .convening-text{font-size:12.5px;color:var(--muted);font-style:italic;display:inline-flex;align-items:center;gap:6px}
+.convening-row .convening-dots{display:inline-flex;gap:3px;margin-left:2px}
+.convening-row .convening-dots span{width:4px;height:4px;border-radius:50%;background:var(--muted);opacity:0.35;animation:convDot 1.2s var(--ease-soft) infinite}
+.convening-row .convening-dots span:nth-child(2){animation-delay:0.2s}
+.convening-row .convening-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes convDot{0%,80%,100%{opacity:0.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}
+.message-avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0;background:var(--glass-fill-2);border:1px solid var(--glass-stroke);box-shadow:0 1px 0 rgba(255,255,255,0.8) inset;overflow:hidden}
+.message-row.user .message-avatar{background:linear-gradient(135deg, var(--accent), oklch(48% 0.16 280));color:white;border-color:transparent;font-size:11px;font-weight:600;letter-spacing:0.04em}
+.message-avatar svg{width:24px;height:24px;display:block}
+.message-col{max-width:min(560px, 78%)}
+.message-meta{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:11px;color:var(--muted)}
+.message-row.user .message-meta{justify-content:flex-end}
+.message-meta .name{font-weight:600;color:var(--fg-soft)}
+.message-bubble{padding:10px 14px;border-radius:14px;font-size:13.5px;line-height:1.55;background:var(--glass-fill-2);border:1px solid var(--glass-stroke);box-shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 1px 3px rgba(15,23,42,0.04);position:relative;word-wrap:break-word}
+.agent-msg .message-bubble{border-left:2.5px solid var(--agent-color);border-top-left-radius:5px}
+.message-row.user .message-bubble{background:linear-gradient(135deg, var(--accent), oklch(48% 0.16 280));color:white;border-color:transparent;border-top-right-radius:5px;box-shadow:0 1px 0 rgba(255,255,255,0.4) inset, 0 4px 12px color-mix(in oklch, var(--accent) 25%, transparent)}
+
+.score-chip{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 10px;background:color-mix(in oklch, var(--agent-color) 10%, white);border:1px solid color-mix(in oklch, var(--agent-color) 22%, transparent);border-radius:8px;font-size:11.5px;font-weight:600;color:var(--agent-color);font-variant-numeric:tabular-nums}
+.score-chip .v-dot{width:6px;height:6px;border-radius:50%;background:var(--agent-color)}
+
+.cursor-blink{display:inline-block;width:6px;height:14px;background:var(--agent-color, var(--fg-soft));margin-left:2px;border-radius:1px;vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+.verdict-strip{margin:8px 0 14px;padding:14px 16px;background:var(--glass-fill-3);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--glass-stroke);border-radius:14px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 4px 12px rgba(15,23,42,0.06);opacity:0;transform:translateY(8px);animation:msgIn .6s var(--ease-out) forwards}
+.verdict-badge{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:5px 11px;border-radius:8px;color:white;background:var(--verdict-color);box-shadow:0 1px 0 rgba(255,255,255,0.4) inset, 0 2px 6px color-mix(in oklch, var(--verdict-color) 30%, transparent)}
+.verdict-text{flex:1;min-width:0}
+.verdict-text .vt-title{font-size:13.5px;font-weight:600;letter-spacing:-0.01em}
+.verdict-text .vt-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+.score-mini{display:flex;gap:4px;align-items:flex-end;height:32px}
+.score-mini .sm-bar{width:6px;background:var(--agent-color);border-radius:2px 2px 0 0;opacity:0.8;transition:height .8s var(--ease-out)}
+.verdict-avg{text-align:right;font-variant-numeric:tabular-nums}
+.verdict-avg .va-num{font-size:22px;font-weight:700;letter-spacing:-0.025em;line-height:1;color:var(--verdict-color)}
+.verdict-avg .va-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-top:2px}
+
+.composer{grid-area:composer;padding:12px 20px 16px;background:linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0.65));border-top:1px solid var(--glass-stroke);position:relative}
+.composer-inner{position:relative;display:flex;align-items:flex-end;gap:8px;background:var(--glass-fill-3);border:1px solid var(--glass-stroke-2);border-radius:18px;padding:8px 8px 8px 16px;box-shadow:0 1px 0 rgba(255,255,255,0.9) inset, 0 4px 14px rgba(15,23,42,0.06);transition:border-color .2s, box-shadow .2s}
+.composer-inner:focus-within{border-color:color-mix(in oklch, var(--accent) 40%, transparent);box-shadow:0 1px 0 rgba(255,255,255,0.9) inset, 0 0 0 4px var(--accent-soft), 0 4px 14px rgba(15,23,42,0.06)}
+#composerInput{flex:1;resize:none;border:none;outline:none;background:transparent;font:inherit;font-size:13.5px;line-height:1.5;color:var(--fg);padding:7px 0;max-height:120px;min-height:24px;font-family:var(--font-body)}
+#composerInput::placeholder{color:var(--muted-2)}
+
+.send-btn{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;background:linear-gradient(135deg, var(--accent), oklch(48% 0.16 280));color:white;display:grid;place-items:center;font-size:14px;box-shadow:0 1px 0 rgba(255,255,255,0.4) inset, 0 2px 8px color-mix(in oklch, var(--accent) 35%, transparent);transition:transform .15s var(--ease-spring), box-shadow .2s, opacity .2s}
+.send-btn:hover:not(:disabled){transform:scale(1.08)}
+.send-btn:active:not(:disabled){transform:scale(0.95)}
+.send-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.send-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:0 1px 0 rgba(255,255,255,0.4) inset, 0 2px 8px color-mix(in oklch, var(--accent) 20%, transparent)}
+
+.composer-hint{font-size:10.5px;color:var(--muted-2);text-align:center;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:10px}
+.composer-hint kbd{font-family:var(--font-mono);font-size:9.5px;background:rgba(15,23,42,0.05);border:1px solid var(--glass-stroke);border-radius:4px;padding:1px 5px;color:var(--fg-soft)}
+
+.mention-pop{position:absolute;bottom:calc(100% + 6px);left:20px;right:20px;background:var(--glass-fill-3);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--glass-stroke-2);border-radius:12px;padding:6px;display:none;box-shadow:0 -4px 20px rgba(15,23,42,0.08);z-index:10}
+.mention-pop.open{display:block;animation:msgIn .15s var(--ease-out)}
+.mention-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12.5px}
+.mention-item:hover,.mention-item.active{background:var(--accent-soft)}
+.mention-item .mi-avatar{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:color-mix(in oklch, var(--agent-color) 14%, white);border:1px solid color-mix(in oklch, var(--agent-color) 25%, transparent);overflow:hidden}
+.mention-item .mi-avatar svg{width:20px;height:20px;display:block;color:var(--agent-color)}
+.mention-item .mi-name{font-weight:600;color:var(--fg)}
+.mention-item .mi-focus{color:var(--muted);font-size:11px}
+
+@media (max-width:900px){
+  .window{grid-template-columns:1fr;grid-template-rows:auto 180px 1fr auto;grid-template-areas:"titlebar" "sidebar" "main" "composer";inset:0;border-radius:0}
+  .sidebar{border-right:none;border-bottom:1px solid var(--glass-stroke);max-height:none}
+  .council-list{flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:10px 12px;gap:8px}
+  .council-list::-webkit-scrollbar{height:4px}
+  .agent-card{min-width:200px;flex-shrink:0;padding:9px 10px 8px}
+  .agent-card .ac-score .num{font-size:16px}
+  .agent-card .ac-name{font-size:12px}
+  .agent-card .ac-focus{font-size:10px}
+  .sb-header{padding:10px 14px 8px}
+  .sb-header h3{font-size:10px}
+  .sb-header p{font-size:11px}
+  .titlebar .title{font-size:12px;gap:0}
+  .titlebar .title .glyph{display:none}
+  .main-scroll{padding:16px 16px 8px}
+  .hero-illo{margin-bottom:18px}
+  .hero h1{font-size:24px}
+  .hero p{font-size:13px;margin-bottom:18px}
+  .composer{padding:10px 12px 12px}
+}
+@media (max-width:560px){
+  .window{font-size:13px}
+  .agent-card{min-width:170px}
+  .hero h1{font-size:21px;letter-spacing:-0.025em}
+  .suggestions{gap:6px}
+  .suggestion{font-size:11px;padding:7px 11px}
+  .main-scroll{padding:16px 14px 8px}
+  .message-bubble{font-size:13px  }
+}
+</style>
+
+<!-- Cloudflare Web Analytics (free, edge-side, no server overhead).
+     Token bound to ethicalpanel.com in CF dashboard. No user data leaves CF. -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "27450a813b5d420abed28009e1443110"}'></script>
+</head>
+<body>
+<div class="window">
+
+  <div class="titlebar">
+    <div class="title">
+      <span class="glyph" aria-hidden="true">
+        <svg viewBox="0 0 60 60" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink)">
+          <path d="M 30 14 C 25 14, 23 19, 26 22 C 29 24, 33 23, 33 18 C 33 16, 32 14, 30 14 Z"/>
+          <path d="M 32 22 C 38 24, 41 30, 41 36 C 41 39, 40 41, 38 42 C 36 43, 36 45, 38 46 C 39 47, 38 48, 36 48 C 33 48, 30 46, 28 42 C 27 39, 26 35, 26 30 C 26 26, 28 22, 32 22 Z"/>
+          <path d="M 14 18 C 10 18, 8 22, 10 24 C 12 26, 16 25, 16 21 C 16 19, 15 18, 14 18 Z"/>
+          <path d="M 12 24 C 8 26, 6 30, 6 35 C 6 37, 7 39, 9 40 C 10 41, 10 42, 9 43 C 7 44, 8 45, 10 45 C 12 45, 14 44, 16 42 C 17 40, 18 36, 18 32 C 18 28, 16 25, 12 24 Z"/>
+          <path d="M 46 18 C 42 18, 40 22, 42 24 C 44 26, 48 25, 48 21 C 48 19, 47 18, 46 18 Z"/>
+          <path d="M 48 24 C 52 26, 54 30, 54 35 C 54 37, 53 39, 51 40 C 50 41, 50 42, 51 43 C 53 44, 52 45, 50 45 C 48 45, 46 44, 44 42 C 43 40, 42 36, 42 32 C 42 28, 44 25, 48 24 Z"/>
+        </svg>
+      </span>
+      Ethical Panel
+    </div>
+    <div class="tb-actions">
+      <button class="new-chat-btn" id="newChatBtn" type="button" title="Start a new conversation" aria-label="New chat">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9"/></svg>
+        <span>New chat</span>
+      </button>
+      <span class="tb-pill"><span class="live"></span>Council ready</span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sb-header">
+      <h3>Council</h3>
+      <p>Eight ethical agents. Tap any to read their reasoning.</p>
+    </div>
+    <div class="council-list" id="councilList">
+      <div class="agent-card" id="card-steward" style="--agent-color:oklch(58% 0.14 165)">
+        <div class="ac-top">
+          <div class="ac-avatar" aria-hidden="true">
+            <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+              <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+              <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+              <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+            </svg>
+          </div>
+          <div><div class="ac-name">Steward</div><div class="ac-focus">Environmental Impact</div></div>
+          <div class="ac-score"><span class="num">—</span><span class="den">/100</span></div>
+        </div>
+        <div class="ac-bar"><div class="ac-bar-fill"></div></div>
+        <div class="ac-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span>deliberating…</div>
+        <div class="ac-meta">
+          <span class="ac-verdict">—</span>
+          <div class="ac-flags"></div>
+        </div>
+        <div class="ac-reason"><div class="ac-reason-inner"></div></div>
+      </div>
+      <div class="agent-card" id="card-advocate" style="--agent-color:oklch(58% 0.16 305)">
+        <div class="ac-top">
+          <div class="ac-avatar" aria-hidden="true">
+            <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+              <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+              <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+              <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+            </svg>
+          </div>
+          <div><div class="ac-name">Advocate</div><div class="ac-focus">Fairness &amp; Equity</div></div>
+          <div class="ac-score"><span class="num">—</span><span class="den">/100</span></div>
+        </div>
+        <div class="ac-bar"><div class="ac-bar-fill"></div></div>
+        <div class="ac-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span>deliberating…</div>
+        <div class="ac-meta">
+          <span class="ac-verdict">—</span>
+          <div class="ac-flags"></div>
+        </div>
+        <div class="ac-reason"><div class="ac-reason-inner"></div></div>
+      </div>
+      <div class="agent-card" id="card-beacon" style="--agent-color:oklch(72% 0.14 80)">
+        <div class="ac-top">
+          <div class="ac-avatar" aria-hidden="true">
+            <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+              <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+              <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+              <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+            </svg>
+          </div>
+          <div><div class="ac-name">Beacon</div><div class="ac-focus">Transparency &amp; Honesty</div></div>
+          <div class="ac-score"><span class="num">—</span><span class="den">/100</span></div>
+        </div>
+        <div class="ac-bar"><div class="ac-bar-fill"></div></div>
+        <div class="ac-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span>deliberating…</div>
+        <div class="ac-meta">
+          <span class="ac-verdict">—</span>
+          <div class="ac-flags"></div>
+        </div>
+        <div class="ac-reason"><div class="ac-reason-inner"></div></div>
+      </div>
+      <div class="agent-card" id="card-custodian" style="--agent-color:oklch(60% 0.12 200)">
+        <div class="ac-top">
+          <div class="ac-avatar" aria-hidden="true">
+            <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+              <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+              <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+              <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+            </svg>
+          </div>
+          <div><div class="ac-name">Custodian</div><div class="ac-focus">Privacy &amp; Consent</div></div>
+          <div class="ac-score"><span class="num">—</span><span class="den">/100</span></div>
+        </div>
+        <div class="ac-bar"><div class="ac-bar-fill"></div></div>
+        <div class="ac-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span>deliberating…</div>
+        <div class="ac-meta">
+          <span class="ac-verdict">—</span>
+          <div class="ac-flags"></div>
+        </div>
+        <div class="ac-reason"><div class="ac-reason-inner"></div></div>
+      </div>
+      <div class="agent-card" id="card-sentinel" style="--agent-color:oklch(68% 0.16 50)">
+        <div class="ac-top">
+          <div class="ac-avatar" aria-hidden="true">
+            <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+              <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+              <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+              <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+            </svg>
+          </div>
+          <div><div class="ac-name">Sentinel</div><div class="ac-focus">Harm &amp; Safety</div></div>
+          <div class="ac-score"><span class="num">—</span><span class="den">/100</span></div>
+        </div>
+        <div class="ac-bar"><div class="ac-bar-fill"></div></div>
+        <div class="ac-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span>deliberating…</div>
+        <div class="ac-meta">
+          <span class="ac-verdict">—</span>
+          <div class="ac-flags"></div>
+        </div>
+        <div class="ac-reason"><div class="ac-reason-inner"></div></div>
+      </div>
+      <div class="agent-card" id="card-sage" style="--agent-color:oklch(56% 0.14 250)">
+        <div class="ac-top">
+          <div class="ac-avatar" aria-hidden="true">
+            <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+              <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+              <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+              <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+            </svg>
+          </div>
+          <div><div class="ac-name">Sage</div><div class="ac-focus">Wisdom</div></div>
+          <div class="ac-score"><span class="num">—</span><span class="den">/100</span></div>
+        </div>
+        <div class="ac-bar"><div class="ac-bar-fill"></div></div>
+        <div class="ac-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span>deliberating…</div>
+        <div class="ac-meta">
+          <span class="ac-verdict">—</span>
+          <div class="ac-flags"></div>
+        </div>
+        <div class="ac-reason"><div class="ac-reason-inner"></div></div>
+      </div>
+      <div class="agent-card" id="card-philosopher" style="--agent-color:oklch(60% 0.16 350)">
+        <div class="ac-top">
+          <div class="ac-avatar" aria-hidden="true">
+            <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+              <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+              <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+              <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+            </svg>
+          </div>
+          <div><div class="ac-name">Philosopher</div><div class="ac-focus">Ethical Frameworks</div></div>
+          <div class="ac-score"><span class="num">—</span><span class="den">/100</span></div>
+        </div>
+        <div class="ac-bar"><div class="ac-bar-fill"></div></div>
+        <div class="ac-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span>deliberating…</div>
+        <div class="ac-meta">
+          <span class="ac-verdict">—</span>
+          <div class="ac-flags"></div>
+        </div>
+        <div class="ac-reason"><div class="ac-reason-inner"></div></div>
+      </div>
+      <div class="agent-card" id="card-guardian" style="--agent-color:oklch(50% 0.06 250)">
+        <div class="ac-top">
+          <div class="ac-avatar" aria-hidden="true">
+            <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+              <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+              <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+              <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+            </svg>
+          </div>
+          <div><div class="ac-name">Guardian</div><div class="ac-focus">Compliance &amp; Legality</div></div>
+          <div class="ac-score"><span class="num">—</span><span class="den">/100</span></div>
+        </div>
+        <div class="ac-bar"><div class="ac-bar-fill"></div></div>
+        <div class="ac-thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span>deliberating…</div>
+        <div class="ac-meta">
+          <span class="ac-verdict">—</span>
+          <div class="ac-flags"></div>
+        </div>
+        <div class="ac-reason"><div class="ac-reason-inner"></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-scroll" id="mainScroll">
+      <section class="convene hero" id="convene">
+        <div class="hero-illo" aria-hidden="true">
+          <svg viewBox="0 0 640 340" xmlns="http://www.w3.org/2000/svg">
+            <g class="face" style="--d:0s; --rot:-7deg; --breathe:0s; transform-origin: 50px 175px">
+              <path class="stroke" pathLength="1" d="M 50 28 C 38 28, 34 44, 46 50 C 58 56, 70 48, 70 36 C 70 28, 62 22, 50 28 Z" />
+              <path class="stroke" pathLength="1" d="M 60 50 C 76 56, 86 70, 88 86 C 90 100, 86 110, 82 116 C 80 119, 80 122, 82 124 C 85 127, 85 130, 82 132 C 78 134, 76 137, 78 140 C 82 144, 80 148, 74 150 C 66 152, 60 148, 56 142 C 52 136, 50 128, 50 120 C 50 110, 48 100, 46 90 C 44 78, 46 66, 48 56 C 50 50, 54 48, 60 50 Z" />
+              <path class="doodle" pathLength="1" d="M 72 86 L 79 86" />
+              <path class="stroke-soft" pathLength="1" d="M 46 70 C 38 78, 34 90, 40 100" />
+            </g>
+            <g class="face" style="--d:0.3s; --rot:6deg; --breathe:1.5s; transform-origin: 120px 175px">
+              <path class="stroke" pathLength="1" d="M 120 26 C 108 26, 104 42, 116 48 C 128 54, 140 46, 140 34 C 140 26, 132 20, 120 26 Z" />
+              <path class="stroke" pathLength="1" d="M 130 48 C 146 54, 156 68, 158 84 C 160 98, 156 108, 152 114 C 150 117, 150 120, 152 122 C 155 125, 155 128, 152 130 C 148 132, 146 135, 148 138 C 152 142, 150 146, 144 148 C 136 150, 130 146, 126 140 C 122 134, 120 126, 120 118 C 120 108, 118 98, 116 88 C 114 76, 116 64, 118 54 C 120 48, 124 46, 130 48 Z" />
+              <path class="doodle" pathLength="1" d="M 142 84 L 149 84" />
+              <path class="stroke-soft" pathLength="1" d="M 116 68 C 108 76, 104 88, 110 98" />
+            </g>
+            <g class="face" style="--d:0.6s; --rot:-3deg; --breathe:3s; transform-origin: 190px 175px">
+              <path class="stroke" pathLength="1" d="M 190 24 C 178 24, 174 40, 186 46 C 198 52, 210 44, 210 32 C 210 24, 202 18, 190 24 Z" />
+              <path class="stroke" pathLength="1" d="M 200 46 C 216 52, 226 66, 228 82 C 230 96, 226 106, 222 112 C 220 115, 220 118, 222 120 C 225 123, 225 126, 222 128 C 218 130, 216 133, 218 136 C 222 140, 220 144, 214 146 C 206 148, 200 144, 196 138 C 192 132, 190 124, 190 116 C 190 106, 188 96, 186 86 C 184 74, 186 62, 188 52 C 190 46, 194 44, 200 46 Z" />
+              <path class="doodle" pathLength="1" d="M 212 82 L 219 82" />
+              <path class="stroke-soft" pathLength="1" d="M 186 66 C 178 74, 174 86, 180 96" />
+            </g>
+            <g class="face" style="--d:0.9s; --rot:4deg; --breathe:4.5s; transform-origin: 260px 175px">
+              <path class="stroke" pathLength="1" d="M 260 22 C 248 22, 244 38, 256 44 C 268 50, 280 42, 280 30 C 280 22, 272 16, 260 22 Z" />
+              <path class="stroke" pathLength="1" d="M 270 44 C 286 50, 296 64, 298 80 C 300 94, 296 104, 292 110 C 290 113, 290 116, 292 118 C 295 121, 295 124, 292 126 C 288 128, 286 131, 288 134 C 292 138, 290 142, 284 144 C 276 146, 270 142, 266 136 C 262 130, 260 122, 260 114 C 260 104, 258 94, 256 84 C 254 72, 256 60, 258 50 C 260 44, 264 42, 270 44 Z" />
+              <path class="doodle" pathLength="1" d="M 282 80 L 289 80" />
+              <path class="stroke-soft" pathLength="1" d="M 256 64 C 248 72, 244 84, 250 94" />
+            </g>
+            <g class="face" style="--d:1.2s; --rot:-6deg; --breathe:6s; transform-origin: 330px 175px">
+              <path class="stroke" pathLength="1" d="M 330 20 C 318 20, 314 36, 326 42 C 338 48, 350 40, 350 28 C 350 20, 342 14, 330 20 Z" />
+              <path class="stroke" pathLength="1" d="M 340 42 C 356 48, 366 62, 368 78 C 370 92, 366 102, 362 108 C 360 111, 360 114, 362 116 C 365 119, 365 122, 362 124 C 358 126, 356 129, 358 132 C 362 136, 360 140, 354 142 C 346 144, 340 140, 336 134 C 332 128, 330 120, 330 112 C 330 102, 328 92, 326 82 C 324 70, 326 58, 328 48 C 330 42, 334 40, 340 42 Z" />
+              <path class="doodle" pathLength="1" d="M 352 78 L 359 78" />
+              <path class="stroke-soft" pathLength="1" d="M 326 62 C 318 70, 314 82, 320 92" />
+            </g>
+            <g class="face" style="--d:1.5s; --rot:8deg; --breathe:7.5s; transform-origin: 400px 175px">
+              <path class="stroke" pathLength="1" d="M 400 22 C 388 22, 384 38, 396 44 C 408 50, 420 42, 420 30 C 420 22, 412 16, 400 22 Z" />
+              <path class="stroke" pathLength="1" d="M 410 44 C 426 50, 436 64, 438 80 C 440 94, 436 104, 432 110 C 430 113, 430 116, 432 118 C 435 121, 435 124, 432 126 C 428 128, 426 131, 428 134 C 432 138, 430 142, 424 144 C 416 146, 410 142, 406 136 C 402 130, 400 122, 400 114 C 400 104, 398 94, 396 84 C 394 72, 396 60, 398 50 C 400 44, 404 42, 410 44 Z" />
+              <path class="doodle" pathLength="1" d="M 422 80 L 429 80" />
+              <path class="stroke-soft" pathLength="1" d="M 396 64 C 388 72, 384 84, 390 94" />
+            </g>
+            <g class="face" style="--d:1.8s; --rot:-5deg; --breathe:9s; transform-origin: 470px 175px">
+              <path class="stroke" pathLength="1" d="M 470 24 C 458 24, 454 40, 466 46 C 478 52, 490 44, 490 32 C 490 24, 482 18, 470 24 Z" />
+              <path class="stroke" pathLength="1" d="M 480 46 C 496 52, 506 66, 508 82 C 510 96, 506 106, 502 112 C 500 115, 500 118, 502 120 C 505 123, 505 126, 502 128 C 498 130, 496 133, 498 136 C 502 140, 500 144, 494 146 C 486 148, 480 144, 476 138 C 472 132, 470 124, 470 116 C 470 106, 468 96, 466 86 C 464 74, 466 62, 468 52 C 470 46, 474 44, 480 46 Z" />
+              <path class="doodle" pathLength="1" d="M 492 82 L 499 82" />
+              <path class="stroke-soft" pathLength="1" d="M 466 66 C 458 74, 454 86, 460 96" />
+            </g>
+            <g class="face" style="--d:2.1s; --rot:7deg; --breathe:10.5s; transform-origin: 540px 175px">
+              <path class="stroke" pathLength="1" d="M 540 26 C 528 26, 524 42, 536 48 C 548 54, 560 46, 560 34 C 560 26, 552 20, 540 26 Z" />
+              <path class="stroke" pathLength="1" d="M 550 48 C 566 54, 576 68, 578 84 C 580 98, 576 108, 572 114 C 570 117, 570 120, 572 122 C 575 125, 575 128, 572 130 C 568 132, 566 135, 568 138 C 572 142, 570 146, 564 148 C 556 150, 550 146, 546 140 C 542 134, 540 126, 540 118 C 540 108, 538 98, 536 88 C 534 76, 536 64, 538 54 C 540 48, 544 46, 550 48 Z" />
+              <path class="doodle" pathLength="1" d="M 562 84 L 569 84" />
+              <path class="stroke-soft" pathLength="1" d="M 536 68 C 528 76, 524 88, 530 98" />
+            </g>
+            <path class="doodle" pathLength="1" d="M 80 130 C 90 120, 100 125, 105 132" />
+            <path class="doodle" pathLength="1" d="M 150 130 C 160 120, 170 125, 175 132" />
+            <path class="doodle" pathLength="1" d="M 220 130 C 230 120, 240 125, 245 132" />
+            <path class="doodle" pathLength="1" d="M 290 130 C 300 120, 310 125, 315 132" />
+            <path class="doodle" pathLength="1" d="M 360 130 C 370 120, 380 125, 385 132" />
+            <path class="doodle" pathLength="1" d="M 430 130 C 440 120, 450 125, 455 132" />
+            <path class="doodle" pathLength="1" d="M 500 130 C 510 120, 520 125, 525 132" />
+            <path class="doodle" pathLength="1" d="M 60 210 C 120 200, 180 215, 240 210" />
+            <path class="doodle" pathLength="1" d="M 270 210 C 330 200, 390 215, 450 210" />
+            <path class="doodle" pathLength="1" d="M 480 210 C 510 200, 530 215, 550 210" />
+          </svg>
+        </div>
+
+        <div class="hero-eyebrow">The Council</div>
+        <h1>Deliberate with the unified council</h1>
+        <p>Describe a decision, idea, or situation. Eight ethical lenses converge, deliberate visibly, and surface what each one sees.</p>
+
+        <div class="suggestions">
+          <button class="suggestion" data-q="A new ride-share app that matches drivers and passengers by astrological sign">Ride-share matching by star sign</button>
+          <button class="suggestion" data-q="I want to start a subscription box for ethically sourced baby clothes">Ethical baby clothing subscription</button>
+          <button class="suggestion" data-q="Should my SaaS company sell anonymized usage data to fund free tiers?">Sell anonymized usage data?</button>
+          <button class="suggestion" data-q="I'm thinking of adopting out my elderly family dog to a farm">Rehome elderly family dog</button>
+        </div>
+      </section>
+      <div id="messages"></div>
+    </div>
+  </main>
+
+  <div class="composer">
+    <div class="composer-inner">
+      <label for="composerInput" class="sr-only">Describe a situation for the council to deliberate</label>
+      <textarea id="composerInput" rows="1" placeholder="Describe a situation, or type @ to mention an agent…"></textarea>
+      <button class="send-btn" id="sendBtn" aria-label="Send to council" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+      </button>
+    </div>
+    <div class="composer-hint">
+      <span><kbd>↵</kbd> send</span>
+      <span><kbd>⇧ ↵</kbd> new line</span>
+      <span><kbd>@</kbd> mention agent</span>
+    </div>
+    <div class="mention-pop" id="mentionPop"></div>
+  </div>
+
+</div>
+
+<script>
+const AGENTS = [
+  {id:'steward',     name:'Steward',     focus:'Environmental Impact',  color:'var(--agent-steward)'},
+  {id:'advocate',    name:'Advocate',    focus:'Fairness & Equity',     color:'var(--agent-advocate)'},
+  {id:'beacon',      name:'Beacon',      focus:'Transparency & Honesty',color:'var(--agent-beacon)'},
+  {id:'custodian',   name:'Custodian',   focus:'Privacy & Consent',     color:'var(--agent-custodian)'},
+  {id:'sentinel',    name:'Sentinel',    focus:'Harm & Safety',         color:'var(--agent-sentinel)'},
+  {id:'sage',        name:'Sage',        focus:'Wisdom',                color:'var(--agent-sage)'},
+  {id:'philosopher', name:'Philosopher', focus:'Ethical Frameworks',    color:'var(--agent-philosopher)'},
+  {id:'guardian',    name:'Guardian',    focus:'Compliance & Legality', color:'var(--agent-guardian)'},
+];
+
+const AGENT_BY_ID = Object.fromEntries(AGENTS.map(a => [a.id, a]));
+
+const VERDICT_LABEL = {pass:'Pass', caution:'Caution', flag:'Flag'};
+const VERDICT_COLOR  = {pass:'var(--verdict-pass)', caution:'var(--verdict-caution)', flag:'var(--verdict-flag)'};
+const VERDICT_SUMMARY = {
+  pass:    {title:'Council recommends proceeding',   sub:'Most agents saw the proposal as defensible across their lenses.'},
+  caution: {title:'Council advises care and review', sub:'Mixed readings — proceed only after addressing the specific flags raised.'},
+  flag:    {title:'Council flags material concerns', sub:'Significant risks identified. Pause and revisit before acting.'},
+};
+
+const councilList = document.getElementById('councilList');
+const cards = {};
+AGENTS.forEach(a => {
+  cards[a.id] = document.getElementById('card-' + a.id);
+  cards[a.id].addEventListener('click', () => {
+    document.querySelectorAll('.agent-card').forEach(c => { if (c !== cards[a.id]) c.classList.remove('is-active'); });
+    cards[a.id].classList.toggle('is-active');
+    if (cards[a.id].classList.contains('is-active')){
+      cards[a.id].querySelector('.ac-thinking').style.display = 'none';
+    }
+  });
+});
+
+function setCardThinking(id){
+  const el = cards[id];
+  if (el){
+    el.classList.add('landed');
+    el.classList.add('thinking');
+  }
+}
+function setCardResult(id, result){
+  const el = cards[id];
+  if (!el) return;
+  el.classList.remove('thinking');
+  el.style.setProperty('--verdict-color', VERDICT_COLOR[result.verdict]);
+  el.querySelector('.ac-score .num').textContent = result.score;
+  el.querySelector('.ac-bar-fill').style.width = result.score + '%';
+  el.querySelector('.ac-verdict').textContent = VERDICT_LABEL[result.verdict];
+  const flagsEl = el.querySelector('.ac-flags');
+  flagsEl.innerHTML = result.flags.map(f => `<span class="ac-flag">${f}</span>`).join('');
+  el.querySelector('.ac-reason-inner').textContent = result.reasoning;
+}
+
+function parseSSE(buffer) {
+  // Split the buffer into complete SSE events. SSE format:
+  //   event: <type>\n
+  //   data: <json>\n
+  //   \n
+  // Returns { parsed: [{type, data}], remaining: string }
+  const events = [];
+  let pos = 0;
+  while (true) {
+    const eventStart = buffer.indexOf('event: ', pos);
+    if (eventStart === -1) break;
+    const eventEnd = buffer.indexOf('\n', eventStart);
+    if (eventEnd === -1) break;
+    const eventType = buffer.slice(eventStart + 7, eventEnd).trim();
+    const dataStart = buffer.indexOf('data: ', eventEnd);
+    if (dataStart === -1) break;
+    const dataEnd = buffer.indexOf('\n', dataStart);
+    if (dataEnd === -1) break;
+    const dataStr = buffer.slice(dataStart + 6, dataEnd).trim();
+    let data;
+    try { data = JSON.parse(dataStr); } catch (e) { data = dataStr; }
+    events.push({ type: eventType, data });
+    pos = dataEnd + 1;
+    // Skip the blank line that separates events
+    while (pos < buffer.length && (buffer[pos] === '\n' || buffer[pos] === '\r')) pos++;
+  }
+  return { parsed: events, remaining: buffer.slice(pos) };
+}
+
+// Tracks the "Council convening..." placeholder that appears the instant the
+// user sends a message, so the chat area doesn't look frozen while the first
+// LLM response is in flight. Removed on the first agent_start event (or on
+// error / reset).
+let conveningEl = null;
+function showConveningPlaceholder(label) {
+  if (conveningEl) conveningEl.remove();
+  const row = document.createElement('div');
+  row.className = 'convening-row';
+  row.id = 'conveningRow';
+  row.innerHTML = `
+    <div class="convening-avatar" aria-hidden="true">⚖</div>
+    <div class="convening-text">${escapeHTML(label)}<span class="convening-dots" aria-hidden="true"><span></span><span></span><span></span></span></div>
+  `;
+  messagesEl.appendChild(row);
+  conveningEl = row;
+  scrollToBottom();
+}
+function hideConveningPlaceholder() {
+  if (conveningEl) { conveningEl.remove(); conveningEl = null; }
+}
+
+async function sendFollowUp(text, agent) {
+  // Build a context list from the existing chat history
+  const context = [];
+  const rows = messagesEl.querySelectorAll('.message-row');
+  rows.forEach(row => {
+    if (row.classList.contains('user')) {
+      const bubble = row.querySelector('.message-bubble');
+      if (bubble) context.push({role: 'user', content: bubble.textContent});
+    } else if (row.classList.contains('agent-msg')) {
+      const bubble = row.querySelector('.message-bubble .bubble-text');
+      const agentId = Object.keys(AGENT_BY_ID).find(id => AGENT_BY_ID[id].name === row.querySelector('.name')?.textContent);
+      if (bubble && agentId) {
+        context.push({role: 'assistant', agent_id: agentId, content: bubble.textContent});
+      }
+    }
+  });
+
+  showConveningPlaceholder(`Asking ${agent.name}`);
+  let response;
+  try {
+    response = await fetch('/api/follow-up', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        prompt: text,
+        agent_id: agent.id,
+        context: context,
+      }),
+    });
+  } catch (e) {
+    hideConveningPlaceholder();
+    showError('Could not reach server: ' + e.message);
+    return;
+  }
+  if (!response.ok) {
+    hideConveningPlaceholder();
+    showError('Server error: HTTP ' + response.status);
+    return;
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let bubble = null;
+
+  try {
+    while (true) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, {stream: true});
+      const {parsed, remaining} = parseSSE(buffer);
+      buffer = remaining;
+      for (const evt of parsed) {
+        if (evt.type === 'agent_start') {
+          hideConveningPlaceholder();
+          setCardThinking(evt.data.id);
+          bubble = createAgentBubble(agent);
+        } else if (evt.type === 'reasoning_delta') {
+          if (bubble) appendReasoningText(bubble.textEl, evt.data.text, bubble.cursor);
+        } else if (evt.type === 'agent_result') {
+          const r = evt.data;
+          if (bubble) {
+            finalizeAgentBubble(bubble.textEl, bubble.cursor, r);
+            showScoreChip(bubble.chip, r);
+          }
+          setCardResult(r.id, r);
+        } else if (evt.type === 'error') {
+          hideConveningPlaceholder();
+          showError(evt.data.message || 'Server error during follow-up');
+        }
+      }
+    }
+  } catch (e) {
+    hideConveningPlaceholder();
+    showError('Stream interrupted: ' + e.message);
+  }
+}
+
+async function runDeliberation(prompt) {
+  showConveningPlaceholder('Convening the council');
+  let response;
+  try {
+    response = await fetch('/api/deliberate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({prompt})
+    });
+  } catch (e) {
+    hideConveningPlaceholder();
+    showError('Could not reach server: ' + e.message);
+    return;
+  }
+  if (!response.ok) {
+    hideConveningPlaceholder();
+    showError('Server error: HTTP ' + response.status);
+    return;
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  const results = [];
+  const agentById = Object.fromEntries(AGENTS.map(a => [a.id, a]));
+  // Per-agent state for in-flight bubbles
+  const bubbles = {};  // agent_id -> {textEl, cursor, chip}
+
+  try {
+    while (true) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, {stream: true});
+      const {parsed, remaining} = parseSSE(buffer);
+      buffer = remaining;
+      for (const evt of parsed) {
+        if (evt.type === 'agent_start') {
+          hideConveningPlaceholder();
+          const agent = agentById[evt.data.id];
+          if (!agent) continue;
+          setCardThinking(evt.data.id);
+          bubbles[evt.data.id] = createAgentBubble(agent);
+        } else if (evt.type === 'reasoning_delta') {
+          const b = bubbles[evt.data.id];
+          if (!b) continue;
+          appendReasoningText(b.textEl, evt.data.text, b.cursor);
+        } else if (evt.type === 'agent_result') {
+          const r = evt.data;
+          const b = bubbles[r.id];
+          if (b) {
+            finalizeAgentBubble(b.textEl, b.cursor, r);
+            showScoreChip(b.chip, r);
+          }
+          setCardResult(r.id, r);
+          results.push(r);
+        } else if (evt.type === 'complete') {
+          showVerdict(results);
+        } else if (evt.type === 'error') {
+          hideConveningPlaceholder();
+          showError(evt.data.message || 'Server error during deliberation');
+        }
+      }
+    }
+  } catch (e) {
+    showError('Stream interrupted: ' + e.message);
+  }
+}
+
+const messagesEl = document.getElementById('messages');
+const mainScroll = document.getElementById('mainScroll');
+const conveneEl  = document.getElementById('convene');
+const newChatBtn = document.getElementById('newChatBtn');
+
+// Tracks whether any user input has been sent. Drives the "New chat" button visibility
+// and also decides whether to show the welcome (conclave) screen on reset.
+let conversationStarted = false;
+
+function appendUserMessage(text){
+  // Hide (don't remove) the welcome screen so we can restore it on "New chat".
+  if (conveneEl) conveneEl.style.display = 'none';
+  conversationStarted = true;
+  newChatBtn.classList.add('visible');
+  const row = document.createElement('div');
+  row.className = 'message-row user';
+  row.innerHTML = `
+    <div class="message-avatar" aria-hidden="true">YOU</div>
+    <div class="message-col">
+      <div class="message-meta"><span class="name">You</span><span>just now</span></div>
+      <div class="message-bubble">${escapeHTML(text)}</div>
+    </div>
+  `;
+  messagesEl.appendChild(row);
+  scrollToBottom();
+}
+
+// Reset the UI to the initial state (welcome screen, empty cards, no messages).
+function resetConversation(){
+  // Clear all messages (this also removes the convening placeholder if any).
+  messagesEl.innerHTML = '';
+  conveningEl = null;
+  // Remove any verdict strip from the last deliberation.
+  document.querySelectorAll('.verdict-strip').forEach(el => el.remove());
+  // Reset every agent card to its empty initial state. Use AGENTS (the only
+  // ordered list available on the frontend) — its order matches the prompt
+  // template and the backend's AGENT_ORDER.
+  for (const a of AGENTS) {
+    const el = cards[a.id];
+    if (!el) continue;
+    el.classList.remove('landed', 'thinking', 'is-active');
+    el.querySelector('.ac-score .num').textContent = '—';
+    el.querySelector('.ac-bar-fill').style.width = '0%';
+    el.querySelector('.ac-verdict').textContent = '—';
+    el.querySelector('.ac-flags').innerHTML = '';
+    el.querySelector('.ac-reason-inner').textContent = '';
+  }
+  // Clear composer.
+  input.value = '';
+  autoResize();
+  updateSendState();
+  // Hide the new chat button (nothing to reset anymore).
+  newChatBtn.classList.remove('visible');
+  conversationStarted = false;
+  // Re-show the welcome screen.
+  if (conveneEl) conveneEl.style.display = '';
+  // Re-focus the composer so the user can start typing immediately.
+  setTimeout(() => input.focus(), 150);
+  // Scroll to the top so the user sees the welcome screen.
+  mainScroll.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+newChatBtn.addEventListener('click', resetConversation);
+
+function showError(message) {
+  const existing = document.querySelector('.error-banner');
+  if (existing) existing.remove();
+  const banner = document.createElement('div');
+  banner.className = 'error-banner';
+  banner.style.cssText = 'margin:8px 0 14px;padding:12px 16px;background:color-mix(in oklch, var(--verdict-flag) 12%, white);border:1px solid color-mix(in oklch, var(--verdict-flag) 35%, transparent);border-radius:12px;color:var(--verdict-flag);font-size:13px;font-weight:500;';
+  banner.textContent = '⚠ ' + message;
+  messagesEl.appendChild(banner);
+  scrollToBottom();
+}
+
+function avatarSVG(){
+  return `<svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 17 4 C 14 4, 12.5 7, 14 9 C 15.5 11, 19 10, 19 7 C 19 5, 18 4, 17 4 Z"/>
+    <path d="M 18 9 C 22 10, 24 13, 24 16 C 24 18, 23 19, 23 20 C 23 21, 22 22, 22 22.5 C 22 23, 21.5 23.5, 20.5 23.5 C 19 23.5, 18 22.5, 17 21 C 16 19, 15.5 16, 16 13 C 16 11, 17 9, 18 9 Z"/>
+    <path d="M 22 22.5 L 22 26 M 20.5 23.5 L 20 26.5"/>
+    <path d="M 22 26 C 20 28, 17 28, 14 28"/>
+  </svg>`;
+}
+
+function appendAgentMessage(agent, result, streamed, onDone){
+  if (conveneEl) conveneEl.style.display = 'none';
+  const row = document.createElement('div');
+  row.className = 'message-row agent-msg';
+  row.style.setProperty('--agent-color', agent.color);
+  row.innerHTML = `
+    <div class="message-avatar" aria-hidden="true">${avatarSVG()}</div>
+    <div class="message-col">
+      <div class="message-meta">
+        <span class="name">${agent.name}</span>
+        <span>${agent.focus}</span>
+      </div>
+      <div class="message-bubble">
+        <span class="bubble-text"></span><span class="cursor-blink"></span>
+        <div class="score-chip" style="display:none">
+          <span class="v-dot"></span>
+          <span class="chip-score"></span>
+          <span class="chip-verdict"></span>
+        </div>
+      </div>
+    </div>
+  `;
+  messagesEl.appendChild(row);
+  const textEl = row.querySelector('.bubble-text');
+  const chip   = row.querySelector('.score-chip');
+  const cursor = row.querySelector('.cursor-blink');
+
+  if (!streamed){
+    textEl.textContent = result.reasoning;
+    showChip();
+    scrollToBottom();
+    return;
+  }
+
+  const text = result.reasoning;
+  let idx = 0;
+  const step = Math.max(1, Math.floor(text.length / 80));
+  function tick(){
+    if (idx < text.length){
+      textEl.textContent += text.slice(idx, idx + step);
+      idx += step;
+      scrollToBottom();
+      setTimeout(tick, 18 + Math.random() * 18);
+    } else {
+      textEl.textContent = text;
+      cursor.remove();
+      showChip();
+      scrollToBottom();
+      if (onDone) onDone();
+    }
+  }
+  function showChip(){
+    chip.style.display = 'inline-flex';
+    chip.querySelector('.chip-score').textContent = result.score + '/100';
+    chip.querySelector('.chip-verdict').textContent = '· ' + VERDICT_LABEL[result.verdict];
+  }
+  tick();
+}
+
+function createAgentBubble(agent) {
+  if (conveneEl) conveneEl.style.display = 'none';
+  const row = document.createElement('div');
+  row.className = 'message-row agent-msg';
+  row.style.setProperty('--agent-color', agent.color);
+  row.innerHTML = `
+    <div class="message-avatar" aria-hidden="true">${avatarSVG()}</div>
+    <div class="message-col">
+      <div class="message-meta">
+        <span class="name">${agent.name}</span>
+        <span>${agent.focus}</span>
+      </div>
+      <div class="message-bubble">
+        <span class="bubble-text"></span><span class="cursor-blink"></span>
+        <div class="score-chip" style="display:none">
+          <span class="v-dot"></span>
+          <span class="chip-score"></span>
+          <span class="chip-verdict"></span>
+        </div>
+      </div>
+    </div>
+  `;
+  messagesEl.appendChild(row);
+  const textEl = row.querySelector('.bubble-text');
+  const chip = row.querySelector('.score-chip');
+  const cursor = row.querySelector('.cursor-blink');
+  scrollToBottom();
+  return { row, textEl, chip, cursor };
+}
+
+function appendReasoningText(textEl, text, cursor) {
+  textEl.textContent += text;
+  // Hide cursor once we have the final text — but we don't know when
+  // "final" is in this model. The cursor stays until agent_result removes it.
+  scrollToBottom();
+}
+
+function finalizeAgentBubble(textEl, cursor, result) {
+  // Remove the cursor-blink element
+  if (cursor && cursor.parentNode) cursor.remove();
+  // Update the text to the final reasoning (in case anything was lost in transit)
+  textEl.textContent = result.reasoning;
+}
+
+function showScoreChip(chip, result) {
+  chip.style.display = 'inline-flex';
+  chip.querySelector('.chip-score').textContent = result.score + '/100';
+  chip.querySelector('.chip-verdict').textContent = '· ' + VERDICT_LABEL[result.verdict];
+}
+
+function showVerdict(results){
+  if (conveneEl) conveneEl.style.display = 'none';
+  const greens  = results.filter(r => r.verdict === 'pass').length;
+  const reds    = results.filter(r => r.verdict === 'flag').length;
+  const overall = greens >= 4 ? 'pass' : reds >= 3 ? 'flag' : 'caution';
+  const avg = Math.round(results.reduce((s,r) => s + r.score, 0) / results.length);
+
+  const strip = document.createElement('div');
+  strip.className = 'verdict-strip';
+  strip.style.setProperty('--verdict-color', VERDICT_COLOR[overall]);
+  const maxScore = Math.max(...results.map(r => r.score));
+  strip.innerHTML = `
+    <div class="verdict-badge">${VERDICT_LABEL[overall]} · ${greens} pass / ${6-greens-reds} caution / ${reds} flag</div>
+    <div class="verdict-text">
+      <div class="vt-title">${VERDICT_SUMMARY[overall].title}</div>
+      <div class="vt-sub">${VERDICT_SUMMARY[overall].sub}</div>
+    </div>
+    <div class="score-mini" id="scoreMini"></div>
+    <div class="verdict-avg">
+      <div class="va-num">${avg}</div>
+      <div class="va-lbl">avg</div>
+    </div>
+  `;
+  messagesEl.appendChild(strip);
+  const mini = strip.querySelector('#scoreMini');
+  results.forEach(r => {
+    const a = AGENT_BY_ID[r.id];
+    const bar = document.createElement('div');
+    bar.className = 'sm-bar';
+    bar.style.setProperty('--agent-color', a.color);
+    bar.style.height = '0px';
+    mini.appendChild(bar);
+    requestAnimationFrame(() => {
+      setTimeout(() => { bar.style.height = (4 + (r.score / maxScore) * 28) + 'px'; }, 50);
+    });
+  });
+  scrollToBottom();
+}
+
+function escapeHTML(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function scrollToBottom(){ requestAnimationFrame(() => { mainScroll.scrollTop = mainScroll.scrollHeight; }); }
+
+const composer = document.querySelector('.composer');
+const input = document.getElementById('composerInput');
+const sendBtn = document.getElementById('sendBtn');
+const mentionPop = document.getElementById('mentionPop');
+
+function autoResize(){
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+}
+function updateSendState(){
+  sendBtn.disabled = input.value.trim().length === 0;
+}
+
+input.addEventListener('input', () => {
+  autoResize();
+  updateSendState();
+  updateMentionPop();
+});
+input.addEventListener('keydown', e => {
+  if (mentionPop.classList.contains('open')){
+    if (e.key === 'ArrowDown'){ e.preventDefault(); moveMention(1); return; }
+    if (e.key === 'ArrowUp'){   e.preventDefault(); moveMention(-1); return; }
+    if (e.key === 'Enter' || e.key === 'Tab'){
+      const active = mentionPop.querySelector('.mention-item.active');
+      if (active){ e.preventDefault(); selectMention(active.dataset.id); return; }
+    }
+    if (e.key === 'Escape'){ closeMention(); return; }
+  }
+  if (e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    handleSend();
+  }
+});
+sendBtn.addEventListener('click', handleSend);
+document.querySelectorAll('.suggestion').forEach(s => {
+  s.addEventListener('click', () => {
+    input.value = s.dataset.q;
+    autoResize();
+    updateSendState();
+    input.focus();
+    handleSend();
+  });
+});
+
+setTimeout(() => input.focus(), 100);
+
+let mentionIdx = 0;
+let mentionMatches = [];
+function updateMentionPop(){
+  const val = input.value;
+  const at = val.lastIndexOf('@');
+  if (at === -1 || at < val.length - 12){
+    closeMention();
+    return;
+  }
+  const query = val.slice(at + 1).toLowerCase();
+  mentionMatches = AGENTS.filter(a =>
+    a.name.toLowerCase().startsWith(query) || a.id.startsWith(query)
+  );
+  if (mentionMatches.length === 0){ closeMention(); return; }
+
+  mentionPop.innerHTML = mentionMatches.map((a, i) => `
+    <div class="mention-item ${i===0?'active':''}" data-id="${a.id}" style="--agent-color:${a.color}">
+      <div class="mi-avatar">${avatarSVG()}</div>
+      <div>
+        <div class="mi-name">${a.name}</div>
+        <div class="mi-focus">${a.focus}</div>
+      </div>
+    </div>
+  `).join('');
+  mentionIdx = 0;
+  mentionPop.classList.add('open');
+  mentionPop.querySelectorAll('.mention-item').forEach(item => {
+    item.addEventListener('click', () => selectMention(item.dataset.id));
+    item.addEventListener('mouseenter', () => {
+      mentionPop.querySelectorAll('.mention-item').forEach(x => x.classList.remove('active'));
+      item.classList.add('active');
+      mentionIdx = Array.from(mentionPop.querySelectorAll('.mention-item')).indexOf(item);
+    });
+  });
+}
+function moveMention(dir){
+  const items = mentionPop.querySelectorAll('.mention-item');
+  if (items.length === 0) return;
+  items[mentionIdx].classList.remove('active');
+  mentionIdx = (mentionIdx + dir + items.length) % items.length;
+  items[mentionIdx].classList.add('active');
+}
+function selectMention(id){
+  const a = AGENT_BY_ID[id];
+  const val = input.value;
+  const at = val.lastIndexOf('@');
+  input.value = val.slice(0, at) + '@' + a.name + ' ';
+  input.focus();
+  closeMention();
+  autoResize();
+  updateSendState();
+}
+function closeMention(){
+  mentionPop.classList.remove('open');
+  mentionMatches = [];
+}
+document.addEventListener('click', e => {
+  if (!composer.contains(e.target)) closeMention();
+});
+
+async function handleSend(){
+  const text = input.value.trim();
+  if (!text) return;
+  closeMention();
+  appendUserMessage(text);
+  input.value = '';
+  autoResize();
+  updateSendState();
+  sendBtn.disabled = true;
+
+  const hasVerdict = !!document.querySelector('.verdict-strip');
+  if (hasVerdict){
+    const target = detectMention(text);
+    if (target){
+      await sendFollowUp(text, target);
+    } else {
+      const sage = AGENT_BY_ID['sage'];
+      appendAgentMessage(sage, {
+        score: 0, verdict: 'caution',
+        flags: [],
+        reasoning: 'Try @mentions like @Beacon or @Guardian to direct your follow-up to a specific agent.',
+      }, true, null);
+    }
+    setTimeout(() => { sendBtn.disabled = false; updateSendState(); input.focus(); }, 1500);
+    return;
+  }
+
+  runDeliberation(text);
+  setTimeout(() => { sendBtn.disabled = false; updateSendState(); input.focus(); }, 500);
+}
+
+function detectMention(text){
+  const m = text.match(/@(\w+)/);
+  if (!m) return null;
+  const key = m[1].toLowerCase();
+  return AGENT_BY_ID[key] || AGENTS.find(x => x.name.toLowerCase() === key);
+}
+</script>
+</body>
+</html>
