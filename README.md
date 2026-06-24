@@ -8,8 +8,6 @@
 
 A chat-based web app where 8 specialized AI agent personas deliberate on an ethical question together, streaming their reasoning in real time. Try it at **[ethicalpanel.com](https://ethicalpanel.com)**.
 
-![Screenshot](static/screenshot.png)
-
 ## What it does
 
 Describe a decision you're weighing — "Should I sell user data?" "Can I use this image?" "Is it OK to deploy on a Friday?" — and 8 agents deliberate in parallel, each through a distinct ethical lens. They stream their reasoning token-by-token. You can `@mention` any agent for a follow-up. The council reaches a verdict (pass / caution / flag) at the end.
