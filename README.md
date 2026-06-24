@@ -2,6 +2,10 @@
 
 **Eight ethical agents. One decision. Clear conscience.**
 
+[![Live](https://img.shields.io/badge/Live-ethicalpanel.com-2ea44f?style=for-the-badge)](https://ethicalpanel.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg?style=for-the-badge)](pyproject.toml)
+
 A chat-based web app where 8 specialized AI agent personas deliberate on an ethical question together, streaming their reasoning in real time. Try it at **[ethicalpanel.com](https://ethicalpanel.com)**.
 
 ![Screenshot](static/screenshot.png)
