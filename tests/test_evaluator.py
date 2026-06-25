@@ -6,7 +6,9 @@ from ethics_canvas.evaluator import (
     Verdict,
     AgentResult,
     build_deliberation_prompt,
+    build_summary_prompt,
     stream_deliberation,
+    stream_summary,
     _parse_deliberation_stream,
     _find_balanced_json,
 )
@@ -505,3 +507,104 @@ async def test_parse_stream_handles_escaped_quotes_in_reasoning():
     steward_deltas = [d for d in events if d.get("type") == "reasoning_delta" and d.get("id") == "steward"]
     full_steward = "".join(d["text"] for d in steward_deltas)
     assert full_steward == 'He said "hello" today'
+
+
+# --- build_summary_prompt ---
+
+def _dummy_results():
+    return [
+        AgentResult(id="steward",    score=95, verdict=Verdict.pass_,    flags=[],            reasoning="Minimal footprint."),
+        AgentResult(id="advocate",   score=10, verdict=Verdict.flag,     flags=["unfair"],    reasoning="Exploits power imbalance."),
+        AgentResult(id="beacon",     score=5,  verdict=Verdict.flag,     flags=["opaque"],    reasoning="Hidden monetization."),
+        AgentResult(id="custodian",  score=5,  verdict=Verdict.flag,     flags=["no_consent"], reasoning="No consent mechanism."),
+        AgentResult(id="sentinel",   score=10, verdict=Verdict.flag,     flags=["risk"],      reasoning="Data breach potential."),
+        AgentResult(id="sage",       score=20, verdict=Verdict.flag,     flags=["short_term"], reasoning="Short-term thinking."),
+        AgentResult(id="philosopher", score=5, verdict=Verdict.flag,     flags=["autonomy"],  reasoning="Treats users as means."),
+        AgentResult(id="guardian",   score=10, verdict=Verdict.flag,     flags=["gdpr"],      reasoning="GDPR violation risk."),
+    ]
+
+
+def test_build_summary_prompt_structure():
+    results = _dummy_results()
+    situation = "Should I sell user data?"
+    system, user = build_summary_prompt(situation, results)
+    assert "neutral synthesizer" in system
+    assert "single paragraph" in system
+    assert "prose" in system
+    assert situation in user
+    for r in results:
+        assert r.id in user
+        assert r.reasoning in user
+
+
+def test_build_summary_prompt_includes_flags():
+    results = _dummy_results()
+    system, user = build_summary_prompt("x", results)
+    # Flags are included when non-empty
+    assert "unfair" in user
+    assert "gdpr" in user
+    # Verdict + score are formatted
+    assert "95/100" in user
+    assert "verdict=pass" in user
+
+
+# --- stream_summary ---
+
+class _StubLLM:
+    def __init__(self, chunks):
+        self._chunks = chunks
+    async def evaluate_stream(self, prompt, system=None):
+        for c in self._chunks:
+            yield c
+
+
+@pytest.mark.asyncio
+async def test_stream_summary_event_order():
+    llm = _StubLLM(["The ", "council ", "flagged ", "this."])
+    events = []
+    async for e in stream_summary("test situation", _dummy_results(), llm=llm):
+        events.append(e)
+    types = [e["type"] for e in events]
+    assert types[0] == "summary_start"
+    assert types[-1] == "summary_result"
+    deltas = [e for e in events if e["type"] == "summary_delta"]
+    assert len(deltas) == 4
+    assert "".join(d["text"] for d in deltas) == "The council flagged this."
+    assert events[-1]["text"] == "The council flagged this."
+
+
+@pytest.mark.asyncio
+async def test_stream_summary_handles_empty_chunks():
+    llm = _StubLLM(["hello", "", " ", "world"])
+    events = []
+    async for e in stream_summary("x", _dummy_results(), llm=llm):
+        events.append(e)
+    # Empty string chunks should be filtered, not emitted as deltas
+    deltas = [e for e in events if e["type"] == "summary_delta"]
+    assert [d["text"] for d in deltas] == ["hello", " ", "world"]
+    assert events[-1]["text"] == "hello world"
+
+
+@pytest.mark.asyncio
+async def test_stream_summary_empty_chunks_yields_only_start_and_result():
+    """Even if the LLM yields nothing, we still emit start + result (empty)."""
+    llm = _StubLLM([])
+    events = []
+    async for e in stream_summary("x", _dummy_results(), llm=llm):
+        events.append(e)
+    assert [e["type"] for e in events] == ["summary_start", "summary_result"]
+    assert events[-1]["text"] == ""
+
+
+@pytest.mark.asyncio
+async def test_stream_summary_re_raises_llm_error():
+    from ethics_canvas.llm import LLMError
+    class _ErrLLM:
+        async def evaluate_stream(self, prompt, system=None):
+            raise LLMError(500, "boom")
+            if False:
+                yield  # makes this an async generator
+    llm = _ErrLLM()
+    with pytest.raises(LLMError):
+        async for _ in stream_summary("x", _dummy_results(), llm=llm):
+            pass

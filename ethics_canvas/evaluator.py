@@ -459,6 +459,74 @@ async def stream_follow_up(
     raise LLMError(None, f"follow-up: stream ended before JSON was complete. Got: {buffer[:200]!r}")
 
 
+def build_summary_prompt(
+    situation: str,
+    results: list[AgentResult],
+) -> tuple[str, str]:
+    """Build the (system, user) prompts for the post-deliberation summary.
+
+    The LLM is asked to write a 1-paragraph synthesis that captures the
+    key concerns, points of agreement, and points of disagreement across
+    the 8 ethical lenses. The synthesis is streamed back to the client
+    as a single card and is never used to score, judge, or modify the
+    individual agent results — it is a faithful summary, nothing more.
+    """
+    assessments = "\n\n".join(
+        f"{i+1}. {r.id} ({AGENTS[r.id].focus}): score={r.score}/100, verdict={r.verdict.value}"
+        + (f", flags={r.flags}" if r.flags else "")
+        + f"\n   Reasoning: {r.reasoning}"
+        for i, r in enumerate(results)
+    )
+    system = (
+        "You are a neutral synthesizer for an ethical deliberation council. "
+        "Given the original situation and the assessments from 8 distinct ethical "
+        "lenses, write a single paragraph (3-5 sentences, roughly 80-120 words) that "
+        "captures the key concerns raised, the points where the lenses agree, and the "
+        "points where they disagree. "
+        "Be factual and do not editorialize, moralize, or add caveats. "
+        "Do not use markdown, bullet points, headers, or any other formatting — output "
+        "flowing prose only. "
+        "Do not address the user directly. Do not start with phrases like 'Overall,' or "
+        "'In summary.' Just state the substance."
+    )
+    user = (
+        f"Situation:\n{situation}\n\n"
+        f"The 8 ethical lenses assessed this as follows:\n\n{assessments}\n\n"
+        "Write the 1-paragraph synthesis now."
+    )
+    return system, user
+
+
+async def stream_summary(
+    situation: str,
+    results: list[AgentResult],
+    *,
+    llm: "LLMClient",
+) -> AsyncIterator[dict]:
+    """Stream the post-deliberation summary as fine-grained events.
+
+    Builds the prompt, calls `llm.evaluate_stream`, and yields events:
+    - "summary_start": {} (fires once)
+    - "summary_delta": {"text": str} (one per token chunk)
+    - "summary_result": {"text": str} (fires once, full text)
+
+    Any LLMError is re-raised so the caller can decide whether to abort
+    the whole response or emit a `summary_error` event. The current
+    caller (api.py) emits a `summary_error` event and continues — the
+    summary is optional, the 8 agent results are not.
+    """
+    system, user = build_summary_prompt(situation, results)
+    yield {"type": "summary_start"}
+    chunks = llm.evaluate_stream(user, system=system)
+    full = []
+    async for chunk in chunks:
+        if not chunk:
+            continue
+        full.append(chunk)
+        yield {"type": "summary_delta", "text": chunk}
+    yield {"type": "summary_result", "text": "".join(full)}
+
+
 def build_follow_up_prompt(
     follow_up_text: str,
     *,

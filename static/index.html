@@ -289,6 +289,10 @@ body{
 .message-row.user .message-meta{justify-content:flex-end}
 .message-meta .name{font-weight:600;color:var(--fg-soft)}
 .message-bubble{padding:10px 14px;border-radius:14px;font-size:13.5px;line-height:1.55;background:var(--glass-fill-2);border:1px solid var(--glass-stroke);box-shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 1px 3px rgba(15,23,42,0.04);position:relative;word-wrap:break-word}
+.summary-msg{margin-top:6px}
+.summary-avatar{background:linear-gradient(135deg, var(--accent), oklch(48% 0.16 280));color:white;border-color:transparent;font-size:13px;box-shadow:0 1px 0 rgba(255,255,255,0.5) inset, 0 2px 6px color-mix(in oklch, var(--accent) 25%, transparent)}
+.summary-bubble{background:color-mix(in oklch, var(--accent) 5%, var(--glass-fill-2));border-color:color-mix(in oklch, var(--accent) 18%, transparent);box-shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 1px 4px color-mix(in oklch, var(--accent) 10%, transparent)}
+.summary-msg .name{color:var(--accent)}
 .agent-msg .message-bubble{border-left:2.5px solid var(--agent-color);border-top-left-radius:5px}
 .message-row.user .message-bubble{background:linear-gradient(135deg, var(--accent), oklch(48% 0.16 280));color:white;border-color:transparent;border-top-right-radius:5px;box-shadow:0 1px 0 rgba(255,255,255,0.4) inset, 0 4px 12px color-mix(in oklch, var(--accent) 25%, transparent)}
 
@@ -1001,17 +1005,27 @@ async function runDeliberation(prompt) {
             finalizeAgentBubble(b.textEl, b.cursor, r);
             showScoreChip(b.chip, r);
           }
-          setCardResult(r.id, r);
-          results.push(r);
-        } else if (evt.type === 'complete') {
-          showVerdict(results);
-        } else if (evt.type === 'error') {
-          hideConveningPlaceholder();
-          showError(evt.data.message || 'Server error during deliberation');
-        }
-      }
-    }
-  } catch (e) {
+           setCardResult(r.id, r);
+           results.push(r);
+         } else if (evt.type === 'complete') {
+           showVerdict(results);
+         } else if (evt.type === 'summary_start') {
+           if (summaryEl) summaryEl.remove();
+           summaryEl = appendSummary();
+         } else if (evt.type === 'summary_delta') {
+           if (summaryEl && summaryEl.textEl) appendReasoningText(summaryEl.textEl, evt.data.text, summaryEl.cursor);
+         } else if (evt.type === 'summary_result') {
+           if (summaryEl && summaryEl.textEl) finalizeSummary(summaryEl.textEl, summaryEl.cursor, evt.data.text);
+         } else if (evt.type === 'summary_error') {
+           // Soft failure — agent results are unaffected, just no summary.
+           if (summaryEl) { summaryEl.row.remove(); summaryEl = null; }
+         } else if (evt.type === 'error') {
+           hideConveningPlaceholder();
+           showError(evt.data.message || 'Server error during deliberation');
+         }
+       }
+     }
+   } catch (e) {
     showError('Stream interrupted: ' + e.message);
   }
 }
@@ -1024,6 +1038,12 @@ const newChatBtn = document.getElementById('newChatBtn');
 // Tracks whether any user input has been sent. Drives the "New chat" button visibility
 // and also decides whether to show the welcome (conclave) screen on reset.
 let conversationStarted = false;
+
+// Holds a reference to the in-flight summary card while it's streaming, so
+// successive `summary_delta` events append to the same text node. Null when
+// no summary is in flight (initial state, after a reset, or after a soft
+// `summary_error`).
+let summaryEl = null;
 
 function appendUserMessage(text){
   // Hide (don't remove) the welcome screen so we can restore it on "New chat".
@@ -1048,6 +1068,7 @@ function resetConversation(){
   // Clear all messages (this also removes the convening placeholder if any).
   messagesEl.innerHTML = '';
   conveningEl = null;
+  summaryEl = null;
   // Remove any verdict strip from the last deliberation.
   document.querySelectorAll('.verdict-strip').forEach(el => el.remove());
   // Reset every agent card to its empty initial state. Use AGENTS (the only
@@ -1288,6 +1309,37 @@ function showScoreChip(chip, result) {
   chip.style.display = 'inline-flex';
   chip.querySelector('.chip-score').textContent = result.score + '/100';
   chip.querySelector('.chip-verdict').textContent = '· ' + VERDICT_LABEL[result.verdict];
+}
+
+// Council summary card — a synthesis of the 8 agent assessments, rendered
+// below the verdict strip. Streams in token-by-token (same as the agents).
+function appendSummary() {
+  if (conveneEl) conveneEl.style.display = 'none';
+  const row = document.createElement('div');
+  row.className = 'message-row summary-msg';
+  row.innerHTML = `
+    <div class="message-avatar summary-avatar" aria-hidden="true">⚖</div>
+    <div class="message-col">
+      <div class="message-meta">
+        <span class="name">Council summary</span>
+        <span>Synthesis across 8 lenses</span>
+      </div>
+      <div class="message-bubble summary-bubble">
+        <span class="bubble-text"></span><span class="cursor-blink"></span>
+      </div>
+    </div>
+  `;
+  messagesEl.appendChild(row);
+  scrollToBottom();
+  return { row, textEl: row.querySelector('.bubble-text'), cursor: row.querySelector('.cursor-blink') };
+}
+
+function finalizeSummary(textEl, cursor, fullText) {
+  if (cursor && cursor.parentNode) cursor.remove();
+  if (textEl) textEl.textContent = fullText;
+  // Release the reference so a future `summary_error` (impossible after
+  // finalize, but defensive) doesn't try to remove a finalized card.
+  summaryEl = null;
 }
 
 function showVerdict(results){

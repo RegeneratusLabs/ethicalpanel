@@ -37,6 +37,7 @@ from ethics_canvas.evaluator import (
     AgentResult,
     stream_deliberation,
     stream_follow_up,
+    stream_summary,
 )
 from ethics_canvas.llm import LLMClient, LLMError
 
@@ -288,6 +289,25 @@ async def deliberate(
                     for r in results
                 ],
             })
+            # Post-deliberation summary (optional 9th LLM call). The summary
+            # streams in after the verdict; if it fails, the agents'
+            # results are unaffected and we surface a soft error.
+            if results:
+                try:
+                    async for sev in stream_summary(prompt, results, llm=llm):
+                        stype = sev["type"]
+                        if stype == "summary_start":
+                            yield _sse_format("summary_start", {})
+                        elif stype == "summary_delta":
+                            yield _sse_format("summary_delta", {"text": sev["text"]})
+                        elif stype == "summary_result":
+                            yield _sse_format("summary_result", {"text": sev["text"]})
+                except LLMError as e:
+                    log.warning("summary failed (agents succeeded): %s", e.message)
+                    yield _sse_format("summary_error", {"message": e.message})
+                except Exception:  # noqa: BLE001
+                    log.exception("summary unexpected error")
+                    yield _sse_format("summary_error", {"message": "internal error"})
         except LLMError as e:
             log.warning("deliberate failed: %s", e.message)
             yield _sse_format("error", {"message": e.message})
