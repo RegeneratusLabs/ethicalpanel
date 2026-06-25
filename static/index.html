@@ -401,6 +401,15 @@ body{
   /* Tighter hero on mobile */
   .hero-illo{height:120px}
   .hero h1{font-size:21px}
+  /* Welcome screen: flow from top, all 4 suggestions visible, no overlap with FAB */
+  .convene{min-height:auto;padding:14px 18px 96px;justify-content:flex-start;align-items:stretch;text-align:left}
+  .convene .eyebrow,.convene .hero h1,.convene .hero p,.convene .suggestions{text-align:left;align-items:flex-start}
+  .convene .suggestions{align-items:stretch;padding-right:140px}
+  .hero-illo{width:min(280px, 80%);height:80px;margin:0 0 14px}
+  .hero h1{font-size:20px;letter-spacing:-0.02em;margin-bottom:8px}
+  .hero p{font-size:13px;line-height:1.5;margin-bottom:14px}
+  .suggestions{gap:6px}
+  .main-scroll{padding:0 0 0 0;-webkit-overflow-scrolling:touch}
 }
 @media (max-width:560px){
   .window{font-size:13px}
